@@ -1,0 +1,16 @@
+{
+  "name": "liana1",
+  "version": "1.0.0",
+  "description": "<3",
+  "main": "index.js",
+  "author": "Patrick Freeman",
+  "scripts": {
+    "run": "ws"
+  },
+  "dependencies": {
+    "three.js": "^0.77.1"
+  },
+  "devDependencies": {
+    "local-web-server": "^2.2.4"
+  }
+}
