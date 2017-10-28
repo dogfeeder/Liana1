@@ -20,13 +20,20 @@ startSpawning();
 
 function init() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
+    scene.background = new THREE.Color(0xffeffa);
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 10;
+
     renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    var light = new THREE.PointLight(0xff0000, 1, 100);
+    light.position.set(0, 0, 10);
+    scene.add(light);
+
     group = new THREE.Group();
     createText();
+
     document.body.appendChild(renderer.domElement);
     leftSpriteFlip = false;
     rightSpriteFlip = false;
@@ -36,6 +43,7 @@ function init() {
     document.addEventListener('touchstart', onDocumentTouchStart, false);
     document.addEventListener('touchmove', onDocumentTouchMove, false);
     window.addEventListener('resize', onWindowResize, false);
+
     animate();
 }
 
@@ -117,18 +125,18 @@ function onDocumentTouchMove(event) {
 function createText() {
     var loader = new THREE.FontLoader();
     loader.load('fonts/droid_sans_regular.typeface.json', function (loadedfont) {
-        var material = new THREE.MeshBasicMaterial({
+        var material = new THREE.MeshNormalMaterial({
             color: 0xf1abf4
         });
         var materials = [
             new THREE.MeshBasicMaterial({ color: 0xf1abf4, overdraw: 0.5 }),
             new THREE.MeshBasicMaterial({ color: 0x000000, overdraw: 0.5 })
         ];
-        var textGeom = new THREE.TextGeometry('Liana', {
+        var textGeom = new THREE.TextGeometry('Liana <3', {
             font: loadedfont,
             size: 2,
             height: 0.4,
-            curveSegments: 12,
+            curveSegments: 6,
         });
         textGeom.computeBoundingBox();
         var centerOffset = -0.5 * (textGeom.boundingBox.max.x - textGeom.boundingBox.min.x);
@@ -172,7 +180,7 @@ function startSpawning() {
     console.log(edge)
 
     row1 = setInterval(function () {
-        spawnAvo("right", rightSpriteFlip, -edge - 0.5, 3);
+        spawnAvo("right", rightSpriteFlip, -edge - 0.5, 5);
         rightSpriteFlip = !rightSpriteFlip;
     }, 400);
 
