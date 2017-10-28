@@ -6,42 +6,139 @@ var leftSpriteFlip, rightSpriteFlip;
 
 var group;
 
+var targetRotation = 0;
+var targetRotationOnMouseDown = 0;
+
+var mouseX = 0;
+var mouseXOnMouseDown = 0;
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+
 init();
-animate();
 startSpawning();
 
 function init() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
+    scene.background = new THREE.Color(0xf0f0f0);
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 10;
     renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-
-
-
+    group = new THREE.Group();
+    createText();
     document.body.appendChild(renderer.domElement);
     leftSpriteFlip = false;
     rightSpriteFlip = false;
     objectsRight = [];
     objectsLeft = [];
+    document.addEventListener('mousedown', onDocumentMouseDown, false);
+    document.addEventListener('touchstart', onDocumentTouchStart, false);
+    document.addEventListener('touchmove', onDocumentTouchMove, false);
+    window.addEventListener('resize', onWindowResize, false);
+    animate();
+}
 
+function onWindowResize() {
+
+    windowHalfX = window.innerWidth / 2;
+    windowHalfY = window.innerHeight / 2;
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+}
+
+function onDocumentMouseDown(event) {
+
+    event.preventDefault();
+
+    document.addEventListener('mousemove', onDocumentMouseMove, false);
+    document.addEventListener('mouseup', onDocumentMouseUp, false);
+    document.addEventListener('mouseout', onDocumentMouseOut, false);
+
+    mouseXOnMouseDown = event.clientX - windowHalfX;
+    targetRotationOnMouseDown = targetRotation;
+
+}
+
+function onDocumentMouseMove(event) {
+
+    mouseX = event.clientX - windowHalfX;
+
+    targetRotation = targetRotationOnMouseDown + (mouseX - mouseXOnMouseDown) * 0.02;
+
+}
+
+function onDocumentMouseUp(event) {
+
+    document.removeEventListener('mousemove', onDocumentMouseMove, false);
+    document.removeEventListener('mouseup', onDocumentMouseUp, false);
+    document.removeEventListener('mouseout', onDocumentMouseOut, false);
+
+}
+
+function onDocumentMouseOut(event) {
+
+    document.removeEventListener('mousemove', onDocumentMouseMove, false);
+    document.removeEventListener('mouseup', onDocumentMouseUp, false);
+    document.removeEventListener('mouseout', onDocumentMouseOut, false);
+
+}
+
+function onDocumentTouchStart(event) {
+
+    if (event.touches.length == 1) {
+
+        event.preventDefault();
+
+        mouseXOnMouseDown = event.touches[0].pageX - windowHalfX;
+        targetRotationOnMouseDown = targetRotation;
+
+    }
+
+}
+
+function onDocumentTouchMove(event) {
+
+    if (event.touches.length == 1) {
+
+        event.preventDefault();
+
+        mouseX = event.touches[0].pageX - windowHalfX;
+        targetRotation = targetRotationOnMouseDown + (mouseX - mouseXOnMouseDown) * 0.05;
+
+    }
+
+}
+
+function createText() {
     var loader = new THREE.FontLoader();
-
-    loader.load('fonts/helvetiker_regular.typeface.json', function (loadedfont) {
-
-        var material = new THREE.MeshPhongMaterial({
-            color: 0xdddddd
+    loader.load('fonts/droid_sans_regular.typeface.json', function (loadedfont) {
+        var material = new THREE.MeshBasicMaterial({
+            color: 0xf1abf4
         });
-        var textGeom = new THREE.TextGeometry('Hello World!', {
+        var materials = [
+            new THREE.MeshBasicMaterial({ color: 0xf1abf4, overdraw: 0.5 }),
+            new THREE.MeshBasicMaterial({ color: 0x000000, overdraw: 0.5 })
+        ];
+        var textGeom = new THREE.TextGeometry('Liana', {
             font: loadedfont,
-            size: 1,
+            size: 2,
             height: 0.4,
             curveSegments: 12,
         });
+        textGeom.computeBoundingBox();
+        var centerOffset = -0.5 * (textGeom.boundingBox.max.x - textGeom.boundingBox.min.x);
         var textMesh = new THREE.Mesh(textGeom, material);
-
-        scene.add(textMesh);
+        textMesh.rotation.x = 0;
+        textMesh.rotation.y = Math.PI * 2;
+        textMesh.position.x = centerOffset;
+        group.add(textMesh);
+        scene.add(group);
+        console.log(group);
     });
 }
 
@@ -93,6 +190,9 @@ function animate() {
     for (var i = 0; i < objectsLeft.length; i++) {
         objectsLeft[i].position.x -= 0.06;
     }
+    console.log(group);
+    group.rotation.y += (targetRotation - group.rotation.y) * 0.05;
+
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
 }
